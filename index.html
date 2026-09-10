@@ -85,12 +85,14 @@
         }
         textarea:focus { border-color: #0078D4; outline: none; }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        button.action-btn { background-color: #0078D4; color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 6px; cursor: pointer; flex: 1; transition: background 0.2s; font-weight: 600; }
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        button.action-btn { background-color: #0078D4; color: white; border: none; padding: 10px 15px; font-size: 14px; border-radius: 6px; cursor: pointer; flex: 1; min-width: 120px; transition: background 0.2s; font-weight: 600; }
         button.action-btn:hover { background-color: #106ebe; }
         button.action-btn:disabled { background-color: #a6c8e0; cursor: not-allowed; }
         .btn-secondary { background-color: #6c757d; }
         .btn-secondary:hover { background-color: #5a6268; }
+        .btn-danger { background-color: #d9534f; }
+        .btn-danger:hover { background-color: #c9302c; }
 
         .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #0078D4; text-align: center; transition: transform 0.2s, background-color 0.3s; }
@@ -114,8 +116,10 @@
     <textarea id="inputText" placeholder="Escribe o pega tu texto aquí para analizarlo..."></textarea>
     
     <div class="btn-group">
-        <button class="action-btn" id="btnAnalizar" onclick="analizarTexto()">Analizar Texto</button>
+        <button class="action-btn" id="btnAnalizar" onclick="analizarTexto()">Analizar</button>
         <button class="action-btn btn-secondary" onclick="hablarTexto()">🔊 Escuchar</button>
+        <button class="action-btn btn-secondary" onclick="pausarReanudarTexto()">⏸️ Pausa</button>
+        <button class="action-btn btn-danger" onclick="detenerTexto()">⏹️ Detener</button>
     </div>
     
     <div id="loading">Consultando API Serverless en Azure... ⏳</div>
@@ -129,11 +133,9 @@
 </div>
 
 <script>
-    // Función para cambiar el modo oscuro / claro
     function toggleTheme() {
         const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme');
-        if (currentTheme === 'dark') {
+        if (html.getAttribute('data-theme') === 'dark') {
             html.removeAttribute('data-theme');
         } else {
             html.setAttribute('data-theme', 'dark');
@@ -188,13 +190,31 @@
         }
 
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
+            window.speechSynthesis.cancel(); // Limpia cualquier audio previo
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-MX';
             utterance.rate = 1.0;
             window.speechSynthesis.speak(utterance);
         } else {
             alert("Tu navegador no soporta la función de lectura de voz.");
+        }
+    }
+
+    function pausarReanudarTexto() {
+        if ('speechSynthesis' in window) {
+            if (window.speechSynthesis.speaking) {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume(); // Reanuda si estaba pausado
+                } else {
+                    window.speechSynthesis.pause();  // Pausa si estaba hablando
+                }
+            }
+        }
+    }
+
+    function detenerTexto() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Cancela y apaga por completo la voz
         }
     }
 </script>
